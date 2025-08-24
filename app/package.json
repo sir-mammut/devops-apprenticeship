@@ -1,0 +1,16 @@
+{
+  "name": "devops-apprentice-app",
+  "version": "1.0.0",
+  "description": "A simple Node.js app for my 30-day DevOps apprenticeship",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "DevOps",
+    "Docker",
+    "Apprenticeship"
+  ],
+  "author": "Eng. Hamisu",
+  "license": "MIT"
+}

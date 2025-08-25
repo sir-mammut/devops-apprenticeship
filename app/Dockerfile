@@ -1,34 +1,50 @@
 # app/Dockerfile
 # ---------------------------------------------
-# Dockerfile to containerize our Node.js app
+# Multi-stage Dockerfile for a small Node.js app
+# - stage "builder": installs deps and prepares app
+# - stage "runtime": minimal image with runtime-only artifacts
+# - runs as a non-root user for better security
 # ---------------------------------------------
 
-# Stage 1: Build the app
-FROM node:18-alpine AS base      # Use the official Node.js 18 image as the base
-WORKDIR /usr/src/app             # Set the working directory inside the container
+# -----------------------
+# Stage: builder
+# -----------------------
+FROM node:18-alpine AS builder
+# set working dir
+WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json (if available) first
-COPY package*.json ./            # This helps leverage Docker cache for faster builds
-RUN npm install --production     # Install production dependencies
+# copy only package manifests first to leverage Docker cache
+COPY package.json package-lock.json ./
 
-COPY . .                         # Copy the rest of the application source code
+# install production dependencies deterministically
+# `npm ci` prefers package-lock.json and is reproducible
+RUN npm ci --omit=dev
 
-# Stage 2: Run the app in a clean container
-EXPOSE 3000                      # Expose the app port (server.js listens on 3000)
+# copy application source
+COPY . .
 
-CMD ["node", "server.js"]        # Start the application
+# run any build steps (uncomment if you have a build step)
+# RUN npm run build
 
-# ---------------------------------------------
+# -----------------------
+# Stage: runtime
+# -----------------------
+FROM node:18-alpine AS runtime
+WORKDIR /usr/src/app
 
+# Create a non-root user 'app' and group for better security
+RUN addgroup -S app && adduser -S app -G app
 
+# Copy only the necessary files from builder stage
+# (if you have a built output, copy that; otherwise copy full app)
+COPY --from=builder /usr/src/app /usr/src/app
 
+# Set NODE_ENV to production by default
+ENV NODE_ENV=production
+EXPOSE 3000
 
+# Use the non-root user created above
+USER app
 
-
-
-
-
-
-
-
-
+# Start the application
+CMD ["node", "server.js"]

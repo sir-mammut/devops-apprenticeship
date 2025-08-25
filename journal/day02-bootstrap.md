@@ -7,13 +7,16 @@
 ---
 
 ## 🎯 Goals for today
+
 - [ ] Goal 1
 - [ ] Goal 2
 
 ## ✅ What I did
+
 - Brief bullet list of actions you took today.
 
 ## 🛠 Commands & snippets I ran
+
 ```bash
 # Example:
 # make preflight
@@ -21,14 +24,17 @@
 ```
 
 ## 📝 Notes, obstacles & fixes
+
 - Document what failed and how you fixed it.
 
 ## ✅ Acceptance criteria
+
 - [ ] Local chmod +x ./scripts/preflight-checks.sh
-./scripts/preflight-checks.sh
-Running preflight checks... passes
+      ./scripts/preflight-checks.sh
+      Running preflight checks... passes
 - [ ] Image builds successfully with docker build -t devops-apprentice-app:latest app
 - [ ] Journal updated with screenshots/links as needed
 
 ## 🔮 Next steps (preview)
+
 - Next day focus and tasks

@@ -1,6 +1,17 @@
+# ignore node modules and local artifacts
 node_modules
 npm-debug.log
-Dockerfile
-.dockerignore
+.DS_Store
+
+# git stuff
 .git
 .gitignore
+
+# local environment / editor
+.vscode
+.idea
+
+# other artifacts - optional
+coverage
+dist
+

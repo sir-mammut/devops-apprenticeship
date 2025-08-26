@@ -1,2 +1,11 @@
 template.md
+# Ignore editor settings and OS artifacts
+.vscode/
 .DS_Store
+
+# Ignore Node.js dependencies and build outputs
+node_modules/
+
+# Ignore log files and directories
+logs/
+*.log

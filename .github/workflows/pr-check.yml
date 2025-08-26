@@ -1,0 +1,19 @@
+name: PR checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  preflight-build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Homebrew (CI)
+        run: brew install colima docker docker-buildx jq yq
+      - name: Start Colima
+        run: |
+          colima start --cpu 2 --memory 4 --disk 20
+      - name: Run preflight
+        run: make preflight
+      - name: Build app image
+        run: make app-build

@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["Buildx", "direnv", "envrc", "shellenv"]
+  "cSpell.words": [
+    "Buildx",
+    "CODEOWNERS",
+    "direnv",
+    "envrc",
+    "pinentry",
+    "shellenv",
+    "signingkey"
+  ]
 }

@@ -9,3 +9,14 @@ node_modules/
 # Ignore log files and directories
 logs/
 *.log
+
+# === Env & local dev artifacts (never commit secrets) ===
+.env
+.env.local
+.env.*.local
+
+# === Misc ===
+*.swp
+*.swo
+*.tmp
+*.bak

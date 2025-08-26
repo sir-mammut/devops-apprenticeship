@@ -1,0 +1,12 @@
+# .githooks/commit-msg
+#!/bin/sh
+# commit-msg hook to enforce Conventional Commits format on the commit message
+# Allowed types: build, chore, ci, docs, feat, fix, perf, refactor, style, test.
+# Scope is optional. Format: type(scope): description
+commit_msg=$(head -n1 "$1")  # Only check the first line (commit summary)
+pattern='^(build|chore|ci|docs|feat|fix|perf|refactor|style|test)(\(.+\))?: .+'
+if ! echo "$commit_msg" | grep -Eq "$pattern"; then
+    echo "ERROR: Commit message does not follow Conventional Commits format." >&2
+    echo "Please use \"type(scope): description\" format. For example: \"feat(ui): add search feature\"" >&2
+    exit 1
+fi

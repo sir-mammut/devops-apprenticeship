@@ -1,19 +1,105 @@
-name: PR checks
+name: PR Checks (Docker BuildKit & Best Practices)
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
   preflight-build:
-    runs-on: macos-latest
+    runs-on: macos-latest  # Use a macOS runner (using Colima for Docker engine on Mac)
+    env:
+      DOCKER_BUILDKIT: "1"  # Enable Docker BuildKit for all docker build commands:contentReference[oaicite:9]{index=9}
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Homebrew (CI)
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Install Colima & Docker + Buildx
         run: brew install colima docker docker-buildx jq yq
-      - name: Start Colima
+        # ^ Using Homebrew to install:
+        # - Colima (lightweight Docker runtime for macOS)
+        # - Docker CLI client
+        # - Docker Buildx plugin (extends Docker for BuildKit/buildx commands)
+        # - jq & yq for JSON/YAML processing (installed for potential use in scripts)
+
+      - name: Start Colima (Docker VM)
         run: |
           colima start --cpu 2 --memory 4 --disk 20
-      - name: Run preflight
+          # Start Colima with 2 CPU, 4GB RAM, 20GB disk (adjust as needed).
+          # Colima provides a Docker daemon on macOS so we can run docker commands.
+      
+      - name: Set Docker context to Colima
+        run: docker context use colima
+        # Ensure Docker CLI talks to Colima's Docker daemon.
+        # This avoids "Docker daemon not running" errors and uses Colima context by default.
+
+      - name: Set up Buildx builder
+        run: docker buildx install
+        # Install buildx as default 'docker builder'. Ensures `docker build` uses Buildx (BuildKit):contentReference[oaicite:10]{index=10}.
+        # (On Docker 23+ this may be default, but we run it for older versions and clarity.)
+
+      - name: Restore Docker layer cache
+        uses: actions/cache@v4
+        id: cache  # ID so we can tell if a cache hit occurred
+        with:
+          path: .buildx-cache          # folder to store cached layers
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}  # unique key per branch/PR
+          restore-keys: ${{ runner.os }}-buildx-  # fallback to any cache for this OS if exact key misses
+        # This pulls cached image layers from previous runs (if any) to speed up the build:contentReference[oaicite:11]{index=11}.
+        # Cache size is limited (approximately 10GB on GitHub):contentReference[oaicite:12]{index=12}.
+
+      - name: Run preflight checks (tests/linters)
         run: make preflight
-      - name: Build app image
-        run: make app-build
+        # Runs any pre-build checks (e.g., unit tests, linters defined in Makefile).
+        # This ensures the app passes tests before we build the Docker image.
+
+      - name: Build app Docker image with BuildKit
+        run: |
+          # Use docker buildx to build the image, with caching enabled
+          docker buildx build \
+            --cache-from type=local,src=.buildx-cache \
+            --cache-to type=local,dest=.buildx-cache,mode=max \
+            --tag devops-app:latest \
+            --load \
+            .
+        # Breakdown:
+        # --cache-from: import build cache from previous runs (stored in .buildx-cache):contentReference[oaicite:13]{index=13}
+        # --cache-to: export new cache to .buildx-cache (mode=max for full cache):contentReference[oaicite:14]{index=14}
+        # --tag: tag the image locally as "devops-app:latest" (so we can reference it next)
+        # --load: load the image into the local Docker engine after build (since buildx can use an isolated builder)
+        # The DOCKER_BUILDKIT=1 env ensures this build uses BuildKit backend:contentReference[oaicite:15]{index=15}.
+        # BuildKit offers faster, more efficient builds (parallel steps, incremental context, etc.):contentReference[oaicite:16]{index=16}.
+        #
+        # Multi-stage Dockerfile and BuildKit together produce a slim final image with only necessary layers.
+
+      - name: Save Docker layer cache
+        if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache@v4
+        with:
+          path: .buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }}
+        # If the cache was not an exact hit (or this is the first run), store the new cache.
+        # Subsequent builds will restore this, making them faster by reusing layers.
+
+      - name: Dockerfile best practices lint (optional)
+        run: docker run --rm -i hadolint/hadolint < app/Dockerfile || true
+        # Uses Hadolint to scan the Dockerfile for any best-practice violations:contentReference[oaicite:17]{index=17}.
+        # (We pipe the Dockerfile content into Hadolint's Docker image. 
+        #  '|| true' allows the job to continue even if linter finds issues.)
+        # This step is optional, but it helps to enforce Dockerfile quality (e.g., no sudo, pinned versions, etc.).
+
+      - name: Inspect image layers
+        run: docker history --no-trunc devops-app:latest
+        # Shows the history of the built image. Each line = one layer, with its size:contentReference[oaicite:18]{index=18}.
+        # We use --no-trunc to see full command info for each layer.
+        # This helps us verify that unnecessary files (like build tools) aren’t in final image layers.
+
+      - name: Check final image size
+        run: docker image ls devops-app:latest --format "🟢 Built image '{{.Repository}}:{{.Tag}}' size: {{.Size}}"
+        # Prints the final image size. The slim base and multi-stage build should yield a smaller image.
+        # We expect a significant size reduction thanks to excluding dev dependencies and using a minimal base:contentReference[oaicite:19]{index=19}.
+
+      - name: Cleanup Colima (stop VM)
+        if: always()  # always stop Colima, even if earlier steps fail
+        run: colima stop || true
+        # Stops the Colima VM to free resources at the end of the job.
+        # (Marked optional with '|| true' in case Colima is already stopped or fails.)

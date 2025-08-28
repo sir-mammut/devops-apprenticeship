@@ -22,11 +22,11 @@
 
 ## ✅ What I Did
 
-- **Dockerfile Refactor:**  
+- **Dockerfile Refactor:**
   Converted to a two-stage build:
 
   1. `builder` stage installs all deps, runs build, then prunes to prod-only.
-  2. `runtime` stage uses `node:18-slim` and copies the pruned `/app`.  
+  2. `runtime` stage uses `node:18-slim` and copies the pruned `/app`.
      This reduced the final image size and eliminated dev-only artifacts.
 
 - **BuildKit & Buildx:**

@@ -1,9 +1,11 @@
 {
   "cSpell.words": [
+    "BUILDKIT",
     "Buildx",
     "CODEOWNERS",
     "direnv",
     "envrc",
+    "oaicite",
     "pinentry",
     "shellenv",
     "signingkey"

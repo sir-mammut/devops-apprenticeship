@@ -1,4 +1,6 @@
-# Makefile (repo root) - corrected (no fragile here-doc in recipe)
+# Makefile (repo root)
+export DOCKER_BUILDKIT ?= 1
+
 SHELL := /bin/bash
 .ONESHELL:
 .DEFAULT_GOAL := help
@@ -26,7 +28,8 @@ colima-down: ## Stop Colima
 	colima stop || true
 
 app-build:  ## Build Docker image from ./app
-	docker build -t $(IMAGE):$(TAG) $(APP_DIR)
+	@echo "Building Docker image with Buildx..."
+	docker buildx build --load -t $(IMAGE):$(TAG) $(APP_DIR)
 
 app-run:    ## Run the app container (detached)
 	-docker stop $(CONTAINER) 2>/dev/null || true
@@ -42,7 +45,9 @@ app-health: ## Health check the running app (expects /health)
 app-stop:   ## Stop & remove the app container
 	docker stop $(CONTAINER) 2>/dev/null || true
 	docker rm $(CONTAINER) 2>/dev/null || true
-
+docker-lint:
+	@docker run --rm -i hadolint/hadolint < app/Dockerfile
+	
 # NEW: delegate new-day work to a script for reliability
 new-day:   ## Create new day branch and journal file: make new-day DAY=02-bootstrap
 ifndef DAY

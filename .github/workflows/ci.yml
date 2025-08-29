@@ -1,0 +1,40 @@
+name: CI (asdf + Make)
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      IMAGE: devops-apprentice-app
+      TAG: ${{ github.sha }}
+      DOCKER_BUILDKIT: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install asdf and everything from .tool-versions
+      - name: Setup asdf & install tools
+        uses: asdf-vm/actions/install@v4
+
+      # Cache npm to speed up CI
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('app/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      # Pre-install deps for lint/test (optional optimization)
+      - name: Install npm deps (app)
+        working-directory: app
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      # Single source of truth: Makefile
+      - name: Run make ci
+        run: make ci

@@ -17,18 +17,15 @@
 ## 📚 What I Learned
 
 1. **DevOps Mindset**
-
    - DevOps isn’t just tools. It’s **culture + practices + automation**.
    - The goal is faster, reliable software delivery through **collaboration and automation**.
 
 2. **Tooling Setup**
-
    - Installed Git for version control.
    - Installed Docker for containerization (will be used daily).
    - Setup VS Code as my IDE.
 
 3. **SSH Authentication**
-
    - Generated SSH keys (`ed25519` algorithm).
    - Stored keys at `~/.ssh/id_ed25519` (private) and `~/.ssh/id_ed25519.pub` (public).
    - Added public key to GitHub → Settings → SSH and GPG keys.
@@ -39,7 +36,6 @@
      ```
 
 4. **Repo Initialization**
-
    - Created GitHub repo: `devops-apprenticeship`.
    - Wrote `README.md` describing apprenticeship purpose, roadmap, and ground rules.
 

@@ -93,6 +93,14 @@ clean:
 	rm -rf $(APP_DIR)/node_modules $(APP_DIR)/dist || true
 	docker image rm -f $(IMAGE):$(TAG) 2>/dev/null || true
 
+format:        ## Format code with Prettier
+	npx prettier --write .
+
+test:          ## Run Jest test suite
+	npx jest --coverage
+
+quality:       ## Run all quality checks (format, lint, test)
+	npx prettier --check . && npx eslint . && npx jest
 
 # NEW: delegate new-day work to a script for reliability
 new-day:   ## Create new day branch and journal file: make new-day DAY=02-bootstrap

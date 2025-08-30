@@ -24,13 +24,11 @@
 
 - **Dockerfile Refactor:**  
   Converted to a two-stage build:
-
   1. `builder` stage installs all deps, runs build, then prunes to prod-only.
   2. `runtime` stage uses `node:18-slim` and copies the pruned `/app`.  
      This reduced the final image size and eliminated dev-only artifacts.
 
 - **BuildKit & Buildx:**
-
   - Enabled `DOCKER_BUILDKIT=1` in Makefile and CI.
   - Used `docker buildx build` for modern, parallelized builds.
   - Confirmed local builds worked with Colima (on macOS).
@@ -40,7 +38,6 @@
   Subsequent PR builds reuse unchanged layers (e.g., `npm ci`), reducing build times significantly.
 
 - **Image Validation:**
-
   - Integrated **Hadolint** to lint Dockerfile best practices.
   - Used `docker history` to confirm only necessary layers remain.
   - Logged final image size to verify slimming worked.

@@ -19,26 +19,22 @@
 ## ✅ What I Did
 
 - **Toolchain Pinning:**
-
   - Added `.tool-versions` with Node.js `18.16.0` and `jq 1.6`.
   - Installed via `asdf install`. Now any developer or CI run gets the **exact same versions** .
 
 - **Environment Automation:**
-
   - Created `.envrc` that:
     - Runs `use asdf` to auto-load pinned tools.
     - Exports `NODE_ENV`, `IMAGE`, and `TAG`.
   - Ran `direnv allow` → Now simply `cd` into the repo and the environment is loaded automatically.
 
 - **Makefile Enhancements:**
-
   - Added `make ci` to run: `clean → deps → lint → test → build`.
   - Added `make deps` for deterministic `npm ci` installs.
   - Updated `make lint` and `make test` to only run if scripts exist in `app/package.json`, skipping gracefully otherwise.
   - Builds Docker image with `${IMAGE}:${TAG}`, defaulting to `devops-apprentice-app:dev`.
 
 - **ESLint Setup:**
-
   - Fixed `.eslintrc.cjs` to enable Node globals (`process`) and ignore config files.
   - Converted `server.js` to **ESM (`import`)** to align with modern Node and linter rules.
   - Lint now passes with Node globals recognized, no false positives.

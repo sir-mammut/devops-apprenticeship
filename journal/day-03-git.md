@@ -20,12 +20,10 @@
 ## ✅ What I Did
 
 - **Repository Hygiene**
-
   - Updated root `.gitignore` to exclude `.vscode/`, `.DS_Store`, `node_modules/`, `logs/`, and `*.log`.
   - This prevents clutter and keeps only relevant files in version control.
 
 - **Code Ownership**
-
   - Created `.github/CODEOWNERS` with:
 
     ```text
@@ -35,7 +33,6 @@
   - Ensures all PRs automatically request `@sir-mammut` as a reviewer.
 
 - **Commit Discipline (Hooks)**
-
   - Added `.githooks/commit-msg` enforcing Conventional Commits format:
     - Example: `feat(repo): add commit hook`
     - Blocks invalid messages like `Update file` or `bad commit`.
@@ -47,7 +44,6 @@
     ```
 
 - **GPG Commit Signing**
-
   - Installed GnuPG (`brew install gnupg pinentry-mac`).
   - Generated a new RSA 4096 key (`gpg --full-generate-key`).
   - Exported public key and added it to GitHub (Settings → SSH & GPG Keys).
@@ -69,7 +65,6 @@
   - Verified on GitHub with green **Verified** badge.
 
 - **Squash Merge Workflow**
-
   - Created branch `day-03-git`.
   - Committed changes with:
 

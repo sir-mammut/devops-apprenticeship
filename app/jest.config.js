@@ -1,2 +1,10 @@
-/* eslint-disable no-undef */
-module.exports = { testEnvironment: 'node', verbose: true };
+export default {
+    testEnvironment: 'node',
+    verbose: true,
+
+    // We don't use Babel; disable transforms
+    transform: {},
+
+    // Optional: keep tests inside app only
+    roots: ['<rootDir>'],
+};

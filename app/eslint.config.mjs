@@ -1,15 +1,29 @@
+// ESLint 9 flat config (ESM) for a Node + Jest project
 import js from '@eslint/js';
 import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import { defineConfig } from 'eslint/config';
+import jest from 'eslint-plugin-jest';
 
-export default defineConfig([
+export default [
+  // Start from ESLint's recommended rules
+  js.configs.recommended,
+
+  // Project rules
   {
-    files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
-    plugins: { js },
-    extends: ['js/recommended'],
-    languageOptions: { globals: globals.browser },
+    files: ['**/*.js', '**/*.mjs'],
+    ignores: ['node_modules/**', 'dist/**', 'jest.config.*'],
+    languageOptions: {
+      ecmaVersion: 2021,
+      sourceType: 'module',
+      globals: {
+        ...globals.node, // process, __dirname, etc.
+        ...globals.jest, // test, expect, beforeAll, etc.
+      },
+    },
+    plugins: { jest },
+    rules: {
+      // Bring in Jest's recommended rules
+      ...(jest.configs.recommended?.rules ?? {}),
+      // add your custom rules here
+    },
   },
-  { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
-  tseslint.configs.recommended,
-]);
+];

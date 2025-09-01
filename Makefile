@@ -96,11 +96,8 @@ clean:
 format:        ## Format code with Prettier
 	npx prettier --write .
 
-test:          ## Run Jest test suite
-	npx jest --coverage
-
 quality:       ## Run all quality checks (format, lint, test)
-	npx prettier --check . && npx eslint . && npx jest
+	npx prettier --check . && npm --prefix app run lint && npm --prefix app run test
 
 # NEW: delegate new-day work to a script for reliability
 new-day:   ## Create new day branch and journal file: make new-day DAY=02-bootstrap

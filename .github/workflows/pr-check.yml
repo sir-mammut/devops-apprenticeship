@@ -6,9 +6,9 @@ on:
 
 jobs:
   preflight-build:
-    runs-on: macos-latest  # Use a macOS runner (using Colima for Docker engine on Mac)
+    runs-on: macos-latest # Use a macOS runner (using Colima for Docker engine on Mac)
     env:
-      DOCKER_BUILDKIT: "1"  # Enable Docker BuildKit for all docker build commands:contentReference[oaicite:9]{index=9}
+      DOCKER_BUILDKIT: "1" # Enable Docker BuildKit for all docker build commands:contentReference[oaicite:9]{index=9}
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
           colima start --cpu 2 --memory 4 --disk 20
           # Start Colima with 2 CPU, 4GB RAM, 20GB disk (adjust as needed).
           # Colima provides a Docker daemon on macOS so we can run docker commands.
-      
+
       - name: Set Docker context to Colima
         run: docker context use colima
         # Ensure Docker CLI talks to Colima's Docker daemon.
@@ -39,11 +39,11 @@ jobs:
 
       - name: Restore Docker layer cache
         uses: actions/cache@v4
-        id: cache  # ID so we can tell if a cache hit occurred
+        id: cache # ID so we can tell if a cache hit occurred
         with:
-          path: .buildx-cache          # folder to store cached layers
-          key: ${{ runner.os }}-buildx-${{ github.ref_name }}  # unique key per branch/PR
-          restore-keys: ${{ runner.os }}-buildx-  # fallback to any cache for this OS if exact key misses
+          path: .buildx-cache # folder to store cached layers
+          key: ${{ runner.os }}-buildx-${{ github.ref_name }} # unique key per branch/PR
+          restore-keys: ${{ runner.os }}-buildx- # fallback to any cache for this OS if exact key misses
         # This pulls cached image layers from previous runs (if any) to speed up the build:contentReference[oaicite:11]{index=11}.
         # Cache size is limited (approximately 10GB on GitHub):contentReference[oaicite:12]{index=12}.
 
@@ -83,7 +83,7 @@ jobs:
       - name: Dockerfile best practices lint (optional)
         run: docker run --rm -i hadolint/hadolint < app/Dockerfile || true
         # Uses Hadolint to scan the Dockerfile for any best-practice violations:contentReference[oaicite:17]{index=17}.
-        # (We pipe the Dockerfile content into Hadolint's Docker image. 
+        # (We pipe the Dockerfile content into Hadolint's Docker image.
         #  '|| true' allows the job to continue even if linter finds issues.)
         # This step is optional, but it helps to enforce Dockerfile quality (e.g., no sudo, pinned versions, etc.).
 
@@ -94,12 +94,13 @@ jobs:
         # This helps us verify that unnecessary files (like build tools) aren’t in final image layers.
 
       - name: Check final image size
-        run: docker image ls devops-app:latest --format "🟢 Built image '{{.Repository}}:{{.Tag}}' size: {{.Size}}"
+        run: |
+          docker image ls devops-app:latest --format "🟢 Built image '{{.Repository}}:{{.Tag}}' size: {{.Size}}"
         # Prints the final image size. The slim base and multi-stage build should yield a smaller image.
-        # We expect a significant size reduction thanks to excluding dev dependencies and using a minimal base:contentReference[oaicite:19]{index=19}.
+        # We expect a significant size reduction thanks to excluding dev dependencies and using a minimal base.
 
       - name: Cleanup Colima (stop VM)
-        if: always()  # always stop Colima, even if earlier steps fail
+        if: always() # always stop Colima, even if earlier steps fail
         run: colima stop || true
         # Stops the Colima VM to free resources at the end of the job.
         # (Marked optional with '|| true' in case Colima is already stopped or fails.)

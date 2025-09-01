@@ -1,4 +1,5 @@
-name: CI (asdf + Make)
+# .github/workflows/ci.yml
+name: CI (Quality Gates)
 
 on:
   pull_request:
@@ -6,35 +7,62 @@ on:
     branches: [main]
 
 jobs:
-  build-test:
+  lint:
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: test
-      IMAGE: devops-apprentice-app
-      TAG: ${{ github.sha }}
-      DOCKER_BUILDKIT: "1"
     steps:
       - uses: actions/checkout@v4
-
-      # Install asdf and everything from .tool-versions
-      - name: Setup asdf & install tools
-        uses: asdf-vm/actions/install@v4
-
-      # Cache npm to speed up CI
-      - name: Cache npm
-        uses: actions/cache@v4
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('app/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
-      # Pre-install deps for lint/test (optional optimization)
-      - name: Install npm deps (app)
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+      - name: Install deps
         working-directory: app
-        run: |
-          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+        run: npm ci
+      - name: Run ESLint
+        working-directory: app
+        run: npm run lint
 
-      # Single source of truth: Makefile
-      - name: Run make ci
-        run: make ci
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+      - name: Install deps
+        working-directory: app
+        run: npm ci
+      - name: Prettier check
+        working-directory: app
+        run: npm run format -- -c # prettier --check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+      - name: Install deps
+        working-directory: app
+        run: npm ci
+      - name: Run tests
+        working-directory: app
+        run: npm run test -- --coverage
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, format, test]
+    env:
+      DOCKER_BUILDKIT: "1"
+      IMAGE: devops-apprentice-app
+      TAG: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t $IMAGE:$TAG ./app

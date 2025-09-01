@@ -1,0 +1,39 @@
+# Coverage files
+app/coverage/
+**/coverage/
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build artifacts
+dist/
+build/
+*.min.js
+
+# Package lock files
+package-lock.json
+**/package-lock.json
+
+# Generated files
+*.html
+*.css
+*.js.map
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.cursor/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

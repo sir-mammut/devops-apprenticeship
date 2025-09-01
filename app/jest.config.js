@@ -1,10 +1,10 @@
 export default {
-    testEnvironment: 'node',
-    verbose: true,
+  testEnvironment: 'node',
+  verbose: true,
 
-    // We don't use Babel; disable transforms
-    transform: {},
+  // We don't use Babel; disable transforms
+  transform: {},
 
-    // Optional: keep tests inside app only
-    roots: ['<rootDir>'],
+  // Optional: keep tests inside app only
+  roots: ['<rootDir>'],
 };

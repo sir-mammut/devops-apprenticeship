@@ -1,6 +1,6 @@
 # Day 02 – macOS Bootstrap, Preflight Checks & Project Tooling
 
-**Date:** 2025-08-24  
+**Date:** 2025-08-25  
 **Day Branch:** `day-02-bootstrap`  
 **Topic:** Environment bootstrap, reproducibility, preflight validation, Makefile orchestration
 

@@ -1,0 +1,50 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "TerraformStateS3Access",
+        "Effect": "Allow",
+        "Action": [
+          "s3:ListBucket",
+          "s3:GetBucketVersioning",
+          "s3:GetBucketAcl",
+          "s3:GetBucketLocation"
+        ],
+        "Resource": "arn:aws:s3:::devops-apprenticeship-terraform-state"
+      },
+      {
+        "Sid": "TerraformStateS3ObjectAccess",
+        "Effect": "Allow",
+        "Action": [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:GetObjectVersion"
+        ],
+        "Resource": "arn:aws:s3:::devops-apprenticeship-terraform-state/*"
+      },
+      {
+        "Sid": "TerraformStateLockAccess",
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:DescribeTable"
+        ],
+        "Resource": "arn:aws:dynamodb:us-east-1:388779989838:table/terraform-state-lock"
+      },
+      {
+        "Sid": "GeneralTerraformPermissions",
+        "Effect": "Allow",
+        "Action": [
+          "ec2:Describe*",
+          "iam:List*",
+          "iam:Get*",
+          "s3:ListAllMyBuckets",
+          "dynamodb:ListTables"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }

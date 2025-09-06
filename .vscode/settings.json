@@ -8,6 +8,8 @@
     "oaicite",
     "pinentry",
     "shellenv",
-    "signingkey"
+    "signingkey",
+    "tfstate",
+    "tfvars"
   ]
 }

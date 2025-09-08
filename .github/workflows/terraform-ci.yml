@@ -20,7 +20,7 @@ jobs:
           terraform_version: 1.5.6  # Use a specific Terraform version
 
       - name: Set up TFLint
-        uses: terraform-linters/setup-tflint@v1
+        uses: terraform-linters/setup-tflint@v5
 
       - name: Terraform Format (validation)
         run: terraform fmt -check -recursive

@@ -74,7 +74,7 @@ jobs:
       # -------------- Security gates (only when we pushed an image) --------------
       - name: Trivy scan (fail on HIGH/CRITICAL)
         if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           image-ref: ${{ env.IMAGE_URI }}@${{ steps.build.outputs.digest }}
           format: sarif

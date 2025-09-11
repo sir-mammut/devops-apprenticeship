@@ -20,3 +20,5 @@ logs/
 *.swo
 *.tmp
 *.bak
+
+helper/

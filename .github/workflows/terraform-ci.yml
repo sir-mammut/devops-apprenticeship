@@ -1,32 +1,44 @@
-name: Terraform CI
+# File: .github/workflows/terraform-ci.yml
+name: "Terraform CI"
 
 on:
-  pull_request:
-    branches: [ main ]
   push:
+    branches: [ main ]
+  pull_request:
     branches: [ main ]
 
 jobs:
-  terraform_checks:
+  terraform:
+    name: "Terraform Lint & Validate"
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: 
+          - infra/terraform/envs/dev
+          - infra/terraform/modules/networking
+        # Add more directories (environments/modules) to this list as needed
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Set up Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.5.6  # Use a specific Terraform version
-
-      - name: Set up TFLint
-        uses: terraform-linters/setup-tflint@v1
-
-      - name: Terraform Format (validation)
+          terraform_version: 1.6.0
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+      - name: Terraform Fmt Check (${{ matrix.directory }})
+        working-directory: ${{ matrix.directory }}
         run: terraform fmt -check -recursive
-
-      - name: Terraform Validate
+      - name: Terraform Init (${{ matrix.directory }})
+        working-directory: ${{ matrix.directory }}
+        run: terraform init -backend=false -input=false
+      - name: Terraform Validate (${{ matrix.directory }})
+        working-directory: ${{ matrix.directory }}
         run: terraform validate
-
-      - name: Terraform Lint
-        run: tflint
+      - name: TFLint (${{ matrix.directory }})
+        working-directory: ${{ matrix.directory }}
+        run: |
+          tflint --init 
+          tflint
+      # Optionally, add tfsec or other security scanners here in the future

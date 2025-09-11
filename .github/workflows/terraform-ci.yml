@@ -20,13 +20,13 @@ jobs:
         # Add more directories (environments/modules) to this list as needed
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
       - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
+        uses: terraform-linters/setup-tflint@v5
       - name: Terraform Fmt Check (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
         run: terraform fmt -check -recursive

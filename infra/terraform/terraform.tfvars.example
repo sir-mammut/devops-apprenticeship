@@ -1,0 +1,7 @@
+region              = "eu-north-1"
+env                 = "dev"
+name_prefix         = "devops-apprentice"
+vpc_cidr            = "10.0.0.0/16"
+public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+azs                 = ["eu-north-1a", "eu-north-1b"]
+app_port            = 3000

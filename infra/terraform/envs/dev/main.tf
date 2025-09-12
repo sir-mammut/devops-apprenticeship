@@ -2,8 +2,8 @@
 # File: infra/terraform/envs/dev/main.tf
 #######################
 
-# Terraform configuration for the "dev" environment. 
-# This sets up the AWS provider (using region and profile) and calls the networking module.
+# Terraform configuration for the "dev" environment.
+# Sets up the AWS provider (region and profile) and calls the networking module with environment-specific settings.
 
 terraform {
   required_version = ">= 1.6.0, < 2.0.0"
@@ -29,10 +29,11 @@ provider "aws" {
   }
 }
 
-# Use the networking module to provision VPC and networking components for this environment.
+# Invoke the networking module to provision the VPC, subnets (public & private), and related network components for this environment.
 module "networking" {
-  source              = "../../modules/networking"
-  environment         = var.environment
-  vpc_cidr            = var.vpc_cidr
-  public_subnet_cidrs = var.public_subnet_cidrs
+  source               = "../../modules/networking"
+  environment          = var.environment
+  vpc_cidr             = var.vpc_cidr
+  public_subnet_cidrs  = var.public_subnet_cidrs
+  private_subnet_cidrs = var.private_subnet_cidrs
 }

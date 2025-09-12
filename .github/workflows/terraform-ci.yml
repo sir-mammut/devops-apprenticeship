@@ -17,6 +17,7 @@ jobs:
         directory:
           - infra/terraform/envs/dev
           - infra/terraform/modules/networking
+          - infra/terraform
         # Add more directories (environments/modules) to this list as needed
     permissions:
       contents: read
@@ -57,7 +58,13 @@ jobs:
 
       - name: tfsec Security Scan (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
-        run: tfsec --no-color --format sarif --out tfsec.sarif .
+        run: |
+          if ls *.tf 1> /dev/null 2>&1 || ls *.tf.json 1> /dev/null 2>&1; then
+            tfsec --no-color --format sarif --out tfsec.sarif .
+          else
+            echo "No Terraform files found in ${{ matrix.directory }}, skipping tfsec scan"
+            echo '{"version":"2.1.0","$schema":"https://json.schemastore.org/sarif-2.1.0-rtm.5.json","runs":[{"tool":{"driver":{"informationUri":"https://github.com/aquasecurity/defsec","name":"defsec","rules":[]}},"results":[]}]}' > tfsec.sarif
+          fi
 
       - name: Upload tfsec SARIF (${{ matrix.directory }})
         uses: github/codeql-action/upload-sarif@v2

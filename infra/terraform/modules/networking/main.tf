@@ -37,7 +37,7 @@ resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true # auto-assign public IPs to instances launched in these subnets
+  map_public_ip_on_launch = var.map_public_ip_on_launch # auto-assign public IPs to instances launched in these subnets
   tags = {
     Name = "${var.environment}-public-subnet-${count.index + 1}"
   }
@@ -121,4 +121,90 @@ resource "aws_route_table_association" "private_association" {
   count          = length(var.private_subnet_cidrs)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[0].id
+}
+
+# -------------------------------
+# VPC Flow Logs for monitoring
+# -------------------------------
+resource "aws_flow_log" "vpc_flow_log" {
+  iam_role_arn    = aws_iam_role.flow_log_role.arn
+  log_destination = aws_cloudwatch_log_group.vpc_flow_logs.arn
+  traffic_type    = "REJECT"
+  vpc_id          = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.environment}-vpc-flow-logs"
+  }
+}
+
+# KMS key for CloudWatch logs encryption
+resource "aws_kms_key" "cloudwatch_key" {
+  description             = "KMS key for CloudWatch logs encryption - ${var.environment}"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = {
+    Name = "${var.environment}-cloudwatch-key"
+  }
+}
+
+resource "aws_kms_alias" "cloudwatch_key_alias" {
+  name          = "alias/${var.environment}-cloudwatch-key"
+  target_key_id = aws_kms_key.cloudwatch_key.key_id
+}
+
+# CloudWatch Log Group for VPC Flow Logs
+resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
+  name              = "/aws/vpc/flowlogs-${var.environment}"
+  retention_in_days = 30
+  kms_key_id        = aws_kms_key.cloudwatch_key.arn
+
+  tags = {
+    Name = "${var.environment}-vpc-flow-logs"
+  }
+}
+
+# IAM Role for VPC Flow Logs
+resource "aws_iam_role" "flow_log_role" {
+  name = "${var.environment}-flow-log-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "${var.environment}-flow-log-role"
+  }
+}
+
+# IAM Policy for VPC Flow Logs
+resource "aws_iam_role_policy" "flow_log_policy" {
+  name = "${var.environment}-flow-log-policy"
+  role = aws_iam_role.flow_log_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
+        ]
+        Effect = "Allow"
+        Resource = aws_cloudwatch_log_group.vpc_flow_logs.arn
+      }
+    ]
+  })
 }

@@ -26,3 +26,9 @@ variable "private_subnet_cidrs" {
   type        = list(string)
   default     = []
 }
+
+variable "map_public_ip_on_launch" {
+  description = "Whether to automatically assign public IPs to instances launched in public subnets. Set to false for security."
+  type        = bool
+  default     = false
+}

@@ -1,6 +1,6 @@
 # Day 09 – Terraform Modules, Envs & CI Matrix 🚦
 
-**Date:** YYYY-MM-DD
+**Date:** 2025-09-01
 **Day Branch:** `day-09-modular-terraform`
 **Topic:** Extract networking into a reusable **module**, create a dedicated **dev environment**, and upgrade CI to a **matrix** that runs fmt/validate/tflint across modules and envs.
 

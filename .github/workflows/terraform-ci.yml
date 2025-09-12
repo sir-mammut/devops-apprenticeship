@@ -17,7 +17,7 @@ jobs:
         directory: 
           - infra/terraform/envs/dev
           - infra/terraform/modules/networking
-        # Add more directories (environments/modules) to this list as needed
+        # Adding more directories (environments/modules) to this list as needed
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

@@ -16,7 +16,13 @@ variable "vpc_cidr" {
 }
 
 variable "public_subnet_cidrs" {
-  description = "List of CIDR blocks for public subnets. Should contain exactly two values for two subnets."
+  description = "List of CIDR blocks for public subnets (one per AZ, e.g., two for 2 AZs)."
   type        = list(string)
   default     = ["10.0.1.0/24", "10.0.2.0/24"]
+}
+
+variable "private_subnet_cidrs" {
+  description = "List of CIDR blocks for private subnets. If provided, a NAT Gateway is created for egress. Defaults to empty (no private subnets)."
+  type        = list(string)
+  default     = []
 }

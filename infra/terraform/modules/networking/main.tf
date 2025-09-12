@@ -13,12 +13,12 @@ terraform {
   }
 }
 
-# Terraform module to provision VPC networking (VPC, public subnets, Internet Gateway, route table, routes, associations).
-# This module is designed to create a basic public network infrastructure in a specified AWS region.
+# Terraform module to provision VPC networking (VPC, public/private subnets, Internet Gateway, NAT Gateway, route tables, routes, associations).
+# This module creates a basic network infrastructure with public and private subnets, supporting internet access via IGW (for public subnets) and NAT (for private subnets).
 
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true # ensure instances can resolve DNS names
+  enable_dns_hostnames = true # ensure instances can resolve DNS hostnames
   enable_dns_support   = true # ensure DNS resolution is supported
   tags = {
     # "Name" tag includes environment for identification
@@ -33,7 +33,7 @@ data "aws_availability_zones" "available" {
 
 # Two public subnets, each in a different availability zone.
 resource "aws_subnet" "public" {
-  count                   = 2 # create two subnets
+  count                   = length(var.public_subnet_cidrs) # create one public subnet per CIDR provided
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = data.aws_availability_zones.available.names[count.index]
@@ -51,7 +51,7 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
-# Public route table for the VPC (routes traffic to Internet Gateway)
+# Public route table for the VPC (routes all outbound traffic from public subnets to the Internet Gateway)
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
   # Define a default route sending all IPv4 traffic to the Internet Gateway
@@ -64,9 +64,61 @@ resource "aws_route_table" "public" {
   }
 }
 
-# Associate each public subnet with the public route table (to make them public)
+# Associate each public subnet with the public route table (making them public)
 resource "aws_route_table_association" "public_association" {
-  count          = 2 # one association per subnet
+  count          = length(var.public_subnet_cidrs) # one association per public subnet
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
+}
+
+# Two private subnets, each in a different availability zone (private, no direct public IPs).
+resource "aws_subnet" "private" {
+  count                   = length(var.private_subnet_cidrs) # create one private subnet per CIDR provided
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_subnet_cidrs[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = false # do NOT auto-assign public IPs in private subnets
+  tags = {
+    Name = "${var.environment}-private-subnet-${count.index + 1}"
+  }
+}
+
+# Elastic IP for the NAT Gateway (to provide a public IP for outbound traffic from private subnets)
+resource "aws_eip" "nat" {
+  count = length(var.private_subnet_cidrs) > 0 ? 1 : 0
+  # vpc   = true
+  tags = {
+    Name = "${var.environment}-nat-eip"
+  }
+}
+
+# NAT Gateway to enable outbound internet access for instances in private subnets.
+# Note: Using a single NAT Gateway (in the first public subnet/AZ) for cost efficiency. In production, one NAT per AZ is recommended for high availability.
+resource "aws_nat_gateway" "nat" {
+  count         = length(var.private_subnet_cidrs) > 0 ? 1 : 0
+  allocation_id = aws_eip.nat[0].id
+  subnet_id     = aws_subnet.public[0].id
+  tags = {
+    Name = "${var.environment}-nat-gw"
+  }
+}
+
+# Private route table for the VPC (routes private subnet traffic to the NAT Gateway for internet egress)
+resource "aws_route_table" "private" {
+  count  = length(var.private_subnet_cidrs) > 0 ? 1 : 0
+  vpc_id = aws_vpc.main.id
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat[0].id
+  }
+  tags = {
+    Name = "${var.environment}-private-rt"
+  }
+}
+
+# Associate each private subnet with the private route table (enable NAT routing for private subnets)
+resource "aws_route_table_association" "private_association" {
+  count          = length(var.private_subnet_cidrs)
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private[0].id
 }

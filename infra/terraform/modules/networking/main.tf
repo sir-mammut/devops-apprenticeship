@@ -7,8 +7,8 @@
 
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true    # ensure instances can resolve DNS names
-  enable_dns_support   = true    # ensure DNS resolution is supported
+  enable_dns_hostnames = true # ensure instances can resolve DNS names
+  enable_dns_support   = true # ensure DNS resolution is supported
   tags = {
     # "Name" tag includes environment for identification
     Name = "${var.environment}-vpc"
@@ -22,11 +22,11 @@ data "aws_availability_zones" "available" {
 
 # Two public subnets, each in a different availability zone.
 resource "aws_subnet" "public" {
-  count                   = 2  # create two subnets
+  count                   = 2 # create two subnets
   vpc_id                  = aws_vpc.main.id
   cidr_block              = var.public_subnet_cidrs[count.index]
   availability_zone       = data.aws_availability_zones.available.names[count.index]
-  map_public_ip_on_launch = true   # auto-assign public IPs to instances launched in these subnets
+  map_public_ip_on_launch = true # auto-assign public IPs to instances launched in these subnets
   tags = {
     Name = "${var.environment}-public-subnet-${count.index + 1}"
   }
@@ -55,7 +55,7 @@ resource "aws_route_table" "public" {
 
 # Associate each public subnet with the public route table (to make them public)
 resource "aws_route_table_association" "public_association" {
-  count          = 2  # one association per subnet
+  count          = 2 # one association per subnet
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }

@@ -46,3 +46,15 @@ variable "app_port" {
   description = "Ingress port to open on the app security group"
   default     = 3000
 }
+
+variable "allowed_cidr_blocks" {
+  type        = list(string)
+  description = "CIDR blocks allowed to access the application"
+  default     = ["10.0.0.0/16"] # Restrict to VPC by default
+}
+
+variable "map_public_ip_on_launch" {
+  type        = bool
+  description = "Whether to automatically assign public IPs to instances launched in public subnets"
+  default     = false # Disable by default for security
+}

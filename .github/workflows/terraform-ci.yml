@@ -14,31 +14,52 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        directory: 
+        directory:
           - infra/terraform/envs/dev
           - infra/terraform/modules/networking
-        # Adding more directories (environments/modules) to this list as needed
+        # Add more directories (environments/modules) to this list as needed
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.6.0
+
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v5
+
+      - name: Install tfsec
+        run: |
+          curl -s https://raw.githubusercontent.com/aquasecurity/tfsec/master/scripts/install_linux.sh | bash
+
       - name: Terraform Fmt Check (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
         run: terraform fmt -check -recursive
+
       - name: Terraform Init (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
         run: terraform init -backend=false -input=false
+
       - name: Terraform Validate (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
         run: terraform validate
+
       - name: TFLint (${{ matrix.directory }})
         working-directory: ${{ matrix.directory }}
         run: |
           tflint --init 
           tflint
-      # Optionally, add tfsec or other security scanners here in the future
+
+      - name: tfsec Security Scan (${{ matrix.directory }})
+        working-directory: ${{ matrix.directory }}
+        run: tfsec --no-color --format sarif --out tfsec.sarif .
+
+      - name: Upload tfsec SARIF (${{ matrix.directory }})
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ${{ matrix.directory }}/tfsec.sarif

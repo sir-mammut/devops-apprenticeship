@@ -174,7 +174,7 @@ resource "aws_security_group" "app_sg" {
     to_port     = 443
     protocol    = "tcp"
     cidr_blocks = [
-      "10.0.0.0/16",  # VPC internal
+      "10.0.0.0/16",   # VPC internal
       "172.16.0.0/12", # Private networks
       "192.168.0.0/16" # Private networks
     ]
@@ -272,7 +272,7 @@ resource "aws_iam_role_policy" "flow_log_policy" {
           "logs:DescribeLogGroups",
           "logs:DescribeLogStreams"
         ]
-        Effect = "Allow"
+        Effect   = "Allow"
         Resource = aws_cloudwatch_log_group.vpc_flow_logs.arn
       }
     ]

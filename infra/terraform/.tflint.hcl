@@ -1,5 +1,5 @@
 config {
-  call_module_type = false
+  call_module_type = "local"
 }
 
 plugin "aws" {
@@ -10,5 +10,4 @@ plugin "aws" {
 
 # aws_region = "us-east-1"
 
-rule "aws_s3_bucket_versioning" { enabled = true }
 rule "terraform_required_version" { enabled = true }

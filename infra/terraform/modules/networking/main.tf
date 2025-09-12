@@ -2,6 +2,17 @@
 # File: infra/terraform/modules/networking/main.tf
 ##########################
 
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+  }
+}
+
 # Terraform module to provision VPC networking (VPC, public subnets, Internet Gateway, route table, routes, associations).
 # This module is designed to create a basic public network infrastructure in a specified AWS region.
 

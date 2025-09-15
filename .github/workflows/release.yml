@@ -92,7 +92,7 @@ jobs:
 
       - name: Install Cosign (keyless)
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@v3.9.2
+        uses: sigstore/cosign-installer@v3.10.0
 
         # Cosign needs the OIDC permission above (id-token: write)
 
